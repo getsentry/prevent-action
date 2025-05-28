@@ -184,8 +184,10 @@ runs:
       if: ${{ inputs.disable_safe_directory != 'true' }}
       shell: bash
       run: |
-        git config --global --add safe.directory "${{ github.workspace }}"
+        git config --global --add safe.directory "$WORKSPACE"
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      env:
+        WORKSPACE: "{{ github.workspace }}"
 
     - name: Set fork
       shell: bash
@@ -216,7 +218,7 @@ runs:
     - name: Get and set token
       shell: bash
       run: |
-        if [ "${{ inputs.use_oidc }}" == 'true' ] && [ "$CC_FORK" != 'true' ];
+        if [ "$INPUTS_USE_OIDC" == 'true' ] && [ "$CC_FORK" != 'true' ];
         then
           echo "CC_TOKEN=$CC_OIDC_TOKEN" >> "$GITHUB_ENV"
         elif [ -n "${{ env.CODECOV_TOKEN }}" ];
@@ -224,16 +226,18 @@ runs:
           echo -e "\033[0;32m==>\033[0m Token set from env"
             echo "CC_TOKEN=${{ env.CODECOV_TOKEN }}" >> "$GITHUB_ENV"
         else
-          if [ -n "${{ inputs.token }}" ];
+          if [ -n "$INPUTS_TOKEN" ];
           then
             echo -e "\033[0;32m==>\033[0m Token set from input"
-            CC_TOKEN=$(echo "${{ inputs.token }}" | tr -d '\n')
+            CC_TOKEN=$(echo "$INPUTS_TOKEN" | tr -d '\n')
             echo "CC_TOKEN=$CC_TOKEN" >> "$GITHUB_ENV"
           fi
         fi
       env:
         CC_OIDC_TOKEN: ${{ steps.oidc.outputs.result }}
         CC_OIDC_AUDIENCE: ${{ inputs.url || 'https://codecov.io' }}
+        INPUTS_TOKEN: ${{ inputs.token }}
+        INPUTS_USE_OIDC: ${{ inputs.use_oidc }}
 
     - name: Override branch for forks
       shell: bash
