@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
@@ -23,8 +23,7 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          files: ./coverage/script/coverage-final.json
-          flags: script-${{ matrix.os }}
+          files: ./junit.xml
           name: sentry-prevent-script
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
@@ -32,19 +31,29 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          files: ./coverage/calculator/coverage-final.json,./coverage/coverage-test/coverage-final.json,./coverage/coverage-final.json
-          flags: demo-${{ matrix.os }}
           name: sentry-prevent-demo
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
+      - name: Upload coverage to Sentry Prevent (binary)
+        uses: ./
+        with:
+          fail_ci_if_error: true
+          installer_source: binary
+          name: sentry-prevent-demo
+          verbose: true
+          token: ${{ secrets.PREVENT_TOKEN }}
+      - name: Upload coverage to Sentry Prevent (oidc)
+        uses: ./
+        with:
+          name: prevent-script
+          use_oidc: true
+          verbose: true
       - name: Upload coverage to Sentry Prevent (version)
         uses: ./
         with:
           fail_ci_if_error: true
-          files: ./coverage/calculator/coverage-final.json,./coverage/coverage-test/coverage-final.json,./coverage/coverage-final.json
-          flags: version-${{ matrix.os }}
           name: prevent-version
-          version: v9.1.0
+          version: 11.2.0
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
 
@@ -64,8 +73,7 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          files: ./coverage/script/coverage-final.json
-          flags: script-macos-latest-xlarge
+          files: ./junit.xml
           name: prevent-script
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
@@ -73,16 +81,12 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          files: ./coverage/calculator/coverage-final.json,./coverage/coverage-test/coverage-final.json,./coverage/coverage-final.json
-          flags: demo-macos-latest-xlarge
           name: prevent-demo
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (oidc)
         uses: ./
         with:
-          files: ./coverage/script/coverage-final.json
-          flags: script-${{ matrix.os }}
           name: prevent-script
           use_oidc: true
           verbose: true
@@ -90,10 +94,49 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          files: ./coverage/calculator/coverage-final.json,./coverage/coverage-test/coverage-final.json,./coverage/coverage-final.json
-          flags: version-maxos-latest-xlarge
           name: prevent-version
-          version: v9.1.0
+          version: 11.2.0
+          verbose: true
+          token: ${{ secrets.PREVENT_TOKEN }}
+
+  run-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          submodules: "true"
+      - name: Install dependencies
+        run: pip install -r src/scripts/app/requirements.txt
+      - name: Run tests and collect reports
+        run: pytest src/scripts/app/ --cov --junitxml=junit.xml
+      - name: Upload coverage to Sentry Prevent (script)
+        uses: ./
+        with:
+          fail_ci_if_error: true
+          files: ./junit.xml
+          name: sentry-prevent-script
+          verbose: true
+          token: ${{ secrets.PREVENT_TOKEN }}
+      - name: Upload coverage to Sentry Prevent (demo)
+        uses: ./
+        with:
+          fail_ci_if_error: true
+          name: sentry-prevent-demo
+          verbose: true
+          token: ${{ secrets.PREVENT_TOKEN }}
+      - name: Upload coverage to Sentry Prevent (oidc)
+        uses: ./
+        with:
+          name: prevent-script
+          use_oidc: true
+          verbose: true
+      - name: Upload coverage to Sentry Prevent (version)
+        uses: ./
+        with:
+          fail_ci_if_error: true
+          name: prevent-version
+          version: 11.2.0
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
 
@@ -111,24 +154,19 @@ jobs:
       - name: Upload coverage to Sentry Prevent (script)
         uses: ./
         with:
-          files: ./coverage/script/coverage-final.json
-          flags: script-${{ matrix.os }}
+          files: ./junit.xml
           name: sentry-prevent-script
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (demo)
         uses: ./
         with:
-          files: ./coverage/calculator/coverage-final.json,./coverage/coverage-test/coverage-final.json,./coverage/coverage-final.json
-          flags: demo-${{ matrix.os }}
           name: prevent-demo
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (version)
         uses: ./
         with:
-          files: ./coverage/calculator/coverage-final.json,./coverage/coverage-test/coverage-final.json,./coverage/coverage-final.json
-          flags: version-${{ matrix.os }}
           name: prevent-version
           version: v9.1.0
           verbose: true
