@@ -64,7 +64,7 @@ inputs:
     description: "Specify a prefix on files listed in the network section of the Prevent report. Useful to help resolve path fixing."
     required: false
   os:
-    description: "Override the assumed OS. Options available at cli.codecov.io" # TODO: update this link
+    description: "Override the assumed OS. Options available at https://github.com/getsentry/prevent-cli/releases/latest"
     required: false
   override_branch:
     description: "Specify the branch to be displayed with this commit on Prevent"
@@ -201,11 +201,8 @@ runs:
       id: oidc
       with:
         script: |
-          # Get OIDC token
-          const id_token = await core.getIDToken(process.env.SP_OIDC_AUDIENCE)
+          const id_token = await core.getIDToken('https://codecov.io')
           return id_token
-      env:
-        SP_OIDC_AUDIENCE: ${{ inputs.url || 'https://codecov.io' }}
 
     - name: Get and set token
       shell: bash
@@ -228,7 +225,6 @@ runs:
         fi
       env:
         SP_OIDC_TOKEN: ${{ steps.oidc.outputs.result }}
-        SP_OIDC_AUDIENCE: ${{ inputs.url || 'https://codecov.io' }}
         INPUTS_TOKEN: ${{ inputs.token }}
         INPUTS_USE_OIDC: ${{ inputs.use_oidc }}
 
