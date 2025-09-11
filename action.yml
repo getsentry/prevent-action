@@ -43,9 +43,6 @@ inputs:
   files:
     description: "Comma-separated list of explicit files to upload. These will be added to the coverage files found for upload. If you wish to only upload the specified files, please consider using disable-search to disable uploading other files."
     required: false
-  flags:
-    description: "(Not implemented) Comma-separated list of flags to upload to group coverage metrics."
-    required: false
   git_service:
     description: "Override the git_service (e.g. github_enterprise)"
     required: false

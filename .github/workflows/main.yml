@@ -24,7 +24,6 @@ jobs:
         with:
           fail_ci_if_error: true
           files: ./junit.xml
-          flags: script-${{ matrix.os }}
           name: sentry-prevent-script
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
@@ -32,7 +31,6 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          flags: demo-${{ matrix.os }}
           name: sentry-prevent-demo
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
@@ -40,7 +38,6 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          flags: demo-${{ matrix.os }}
           installer_source: binary
           name: sentry-prevent-demo
           verbose: true
@@ -48,7 +45,6 @@ jobs:
       - name: Upload coverage to Sentry Prevent (oidc)
         uses: ./
         with:
-          flags: script-${{ matrix.os }}
           name: prevent-script
           use_oidc: true
           verbose: true
@@ -56,7 +52,6 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          flags: version-${{ matrix.os }}
           name: prevent-version
           version: 11.2.0
           verbose: true
@@ -79,7 +74,6 @@ jobs:
         with:
           fail_ci_if_error: true
           files: ./junit.xml
-          flags: script-macos-latest-xlarge
           name: prevent-script
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
@@ -87,14 +81,12 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          flags: demo-macos-latest-xlarge
           name: prevent-demo
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (oidc)
         uses: ./
         with:
-          flags: script-${{ matrix.os }}
           name: prevent-script
           use_oidc: true
           verbose: true
@@ -102,7 +94,6 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          flags: version-maxos-latest-xlarge
           name: prevent-version
           version: 11.2.0
           verbose: true
@@ -124,7 +115,6 @@ jobs:
         with:
           fail_ci_if_error: true
           files: ./junit.xml
-          flags: script-$windows
           name: sentry-prevent-script
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
@@ -132,14 +122,12 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          flags: demo-windows
           name: sentry-prevent-demo
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (oidc)
         uses: ./
         with:
-          flags: script-windows
           name: prevent-script
           use_oidc: true
           verbose: true
@@ -147,7 +135,6 @@ jobs:
         uses: ./
         with:
           fail_ci_if_error: true
-          flags: version-windows
           name: prevent-version
           version: 11.2.0
           verbose: true
@@ -168,21 +155,18 @@ jobs:
         uses: ./
         with:
           files: ./junit.xml
-          flags: script-${{ matrix.os }}
           name: sentry-prevent-script
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (demo)
         uses: ./
         with:
-          flags: demo-${{ matrix.os }}
           name: prevent-demo
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (version)
         uses: ./
         with:
-          flags: version-${{ matrix.os }}
           name: prevent-version
           version: v9.1.0
           verbose: true
