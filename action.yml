@@ -4,12 +4,6 @@ name: "Sentry Prevent"
 description: "GitHub Action that uploads coverage and test result reports for your repository to Sentry Prevent"
 author: "Sentry"
 inputs:
-  base_sha:
-    description: 'The base SHA to select. This is only used in the "pr-base-picking" run command'
-    required: false
-  binary:
-    description: "The file location of a pre-downloaded version of the CLI. If specified, integrity checking will be bypassed."
-    required: false
   commit_parent:
     description: "SHA (with 40 chars) of what should be the parent of this commit."
     required: false
@@ -45,40 +39,21 @@ inputs:
   fail_ci_if_error:
     description: "On error, exit with non-zero code"
     required: false
-    default: "false"
+    default: "true"
   files:
     description: "Comma-separated list of explicit files to upload. These will be added to the coverage files found for upload. If you wish to only upload the specified files, please consider using disable-search to disable uploading other files."
     required: false
   flags:
-    description: "Comma-separated list of flags to upload to group coverage metrics."
-    required: false
-  force:
-    description: "Only used for empty-upload run command"
+    description: "(Not implemented) Comma-separated list of flags to upload to group coverage metrics."
     required: false
   git_service:
     description: "Override the git_service (e.g. github_enterprise)"
     required: false
     default: "github"
-  gcov_args:
-    description: "Extra arguments to pass to gcov"
+  installer_source:
+    description: "Select which installer to use. Choices are `binary` and `pypi`, defaults to `pypi`"
     required: false
-  gcov_executable:
-    description: "gcov executable to run. Defaults to 'gcov'"
-    required: false
-    default: "gcov"
-  gcov_ignore:
-    description: "Paths to ignore during gcov gathering"
-    required: false
-  gcov_include:
-    description: "Paths to include during gcov gathering"
-    required: false
-  handle_no_reports_found:
-    description: "If no coverage reports are found, do not raise an exception."
-    required: false
-    default: "false"
-  job_code:
-    description: ""
-    required: false
+    default: "pypi"
   name:
     description: "Custom defined name of the upload. Visible in the Prevent UI"
     required: false
@@ -106,48 +81,17 @@ inputs:
   override_pr:
     description: "Specify the pull request number manually. Used to override pre-existing CI environment variables."
     required: false
-  plugins:
-    description: "Comma-separated list of plugins to run. Specify `noop` to turn off all plugins"
-    required: false
   recurse_submodules:
     description: "Whether to enumerate files inside of submodules for path-fixing purposes. Off by default."
     default: "false"
-  report_type:
-    description: 'The type of file to upload, coverage by default. Possible values are "test_results", "coverage".'
-    required: false
   root_dir:
     description: "Root folder from which to consider paths on the network section. Defaults to current working directory."
-    required: false
-  run_command:
-    description: 'Choose which CLI command to run. Options are "upload-coverage", "empty-upload", "pr-base-picking", "send-notifications". "upload-coverage" is run by default.'
-    required: false
-    default: "upload-coverage"
-  skip_validation:
-    description: "Skip integrity checking of the CLI. This is NOT recommended."
-    required: false
-    default: "false"
-  slug:
-    description: "[Required when using the org token] Set to the owner/repo slug used instead of the private repo token. Only applicable to some Enterprise users."
-    required: false
-  swift_project:
-    description: "Specify the swift project name. Useful for optimization."
     required: false
   token:
     description: "Repository Sentry Prevent token. Used to authorize report uploads"
     required: false
-  url:
-    description: "Set to the Sentry Prevent instance URl. Used by Dedicated Enterprise Cloud customers."
-    required: false
-  use_legacy_upload_endpoint:
-    description: "Use the legacy upload endpoint."
-    required: false
-    default: "false"
   use_oidc:
     description: "Use OIDC instead of token. This will ignore any token supplied"
-    required: false
-    default: "false"
-  use_pypi:
-    description: "Use the pypi version of the CLI instead of from cli.codecov.io" # TODO: update this link
     required: false
     default: "false"
   verbose:
@@ -169,30 +113,77 @@ branding:
 runs:
   using: "composite"
   steps:
-    - name: Action version
+    - name: Initialize action
       shell: bash
       run: |
-        CC_ACTION_VERSION=$(cat ${GITHUB_ACTION_PATH}/src/version)
-        echo -e "\033[0;32m==>\033[0m Running Action version $CC_ACTION_VERSION"
+        # Initialize action
+        echo "SP_SAY() { echo -e \"\$1\"; }" >> "$GITHUB_ENV"
+        echo "SP_EXIT_IF_ERROR() { $SP_SAY \"\$r==> \$1\$x\"; if [ \"\$SP_FAIL_ON_ERROR\" = true ]; then $SP_SAY \"\$r    Exiting...\$x\"; exit 1; fi; }" >> "$GITHUB_ENV"
+        echo "SP_LOWER() { echo \$(echo \$1 | sed 's/SP//' | sed 's/_/-/g' | tr '[:upper:]' '[:lower:]'); }" >> "$GITHUB_ENV"
+        echo "SP_K_ARG() { if [ -n \"\$(eval echo \\\$\\\"SP_\$1\\\")\" ]; then echo \"--\$(lower \"\$1\")\"; fi; }" >> "$GITHUB_ENV"
+        echo "SP_V_ARG() { if [ -n \"\$(eval echo \\\$\\\"SP_\$1\\\")\" ]; then echo \"\$(eval echo \\\$\\\"SP_\$1\\\")\"; fi; }" >> "$GITHUB_ENV"
+        echo "SP_WRITE_BOOL_ARGS() { if [ \"\$(eval echo \\\$\$1)\" = \"true\" ] || [ \"\$(eval echo \\\$\$1)\" = \"1\" ]; then echo \"-\$(lower \$1)\"; fi; }" >> "$GITHUB_ENV"
+        echo "SP_B=\"\\033[0;36m\"" >> "$GITHUB_ENV"
+        echo "SP_G=\"\\033[0;32m\"" >> "$GITHUB_ENV"
+        echo "SP_R=\"\\033[0;31m\"" >> "$GITHUB_ENV"
+        echo "SP_X=\"\\033[0m\"" >> "$GITHUB_ENV"
+        echo "SP_RETRY=\"--retry 5 --retry-delay 2\"" >> "$GITHUB_ENV"
+        echo "SP_VERSION=\"${SP_VERSION}\"" >> "$GITHUB_ENV"
+        echo "SP_FAIL_ON_ERROR=\"${SP_FAIL_ON_ERROR}\"" >> "$GITHUB_ENV"
+
+        SP_ACTION_VERSION=$(cat ${GITHUB_ACTION_PATH}/src/version)
+        $SP_SAY " _____                         _
+         |  __ \\                       | |
+         | |__) |__ _____   _____ _ __ | |_
+         |  _  /.__/ _ \\ \\ / / _ \\ '_ \\| __|
+         | |  | | \\  __/\\ V /  __/ | | | |_
+         |_|  |_|  \\___| \\_/ \\___|_| |_|\\__|
+                                   $SP_R Sentry Prevent$SP_X"
+        $SP_SAY "$SP_G==>$SP_X Running Action version $SP_ACTION_VERSION"
+      env:
+        SP_FAIL_ON_ERROR: ${{ inputs.fail_ci_if_error }}
+        SP_VERSION: ${{ inputs.version }}
+
+    - name: Check for dependencies
+      shell: bash
+      run: |
+        # Check for dependencies
+        if ! git; then
+          $SP_SAY "$SP_R==>Action needs git to run$SP_X";
+          exit 1;
+        elif ! curl; then
+          $SP_SAY "$SP_R==>Action needs git to curl$SP_X";
+          exit 1;
+
+        if [ "$SP_INSTALLER_SOURCE" != "pypi" ] && [ "$SP_INSTALLER_SOURCE" != "binary" ];
+        then
+          $SP_SAY "$SP_R==>Invalid installer source $SP_INSTALLER_SOURCE given. Must be `pypi` or `binary`$SP_X";
+          exit 1;
+        fi
+      env:
+        SP_INSTALLER_SOURCE: ${{ inputs.installer_source }}
+
     - name: Set safe directory
       if: ${{ inputs.disable_safe_directory != 'true' }}
       shell: bash
       run: |
+        # Set safe directory
         git config --global --add safe.directory "$WORKSPACE"
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
       env:
         WORKSPACE: "{{ github.workspace }}"
 
-    - name: Set fork
+    - name: Check if running for a fork
       shell: bash
       run: |
-        CC_FORK="false"
+        # Check if running for a fork
+        SP_FORK="false"
         if [ -n "$GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME" ] && [ "$GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME" != "$GITHUB_REPOSITORY" ];
         then
           echo -e "\033[0;32m==>\033[0m Fork detected"
-          CC_FORK="true"
+          SP_FORK="true"
         fi
-        echo "CC_FORK=$CC_FORK" >> "$GITHUB_ENV"
+        echo "SP_FORK=$SP_FORK" >> "$GITHUB_ENV"
       env:
         GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL: ${{ github.event.pull_request.head.label }}
         GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
@@ -204,49 +195,52 @@ runs:
       id: oidc
       with:
         script: |
-          const id_token = await core.getIDToken(process.env.CC_OIDC_AUDIENCE)
+          # Get OIDC token
+          const id_token = await core.getIDToken(process.env.SP_OIDC_AUDIENCE)
           return id_token
       env:
-        CC_OIDC_AUDIENCE: ${{ inputs.url || 'https://codecov.io' }}
+        SP_OIDC_AUDIENCE: ${{ inputs.url || 'https://codecov.io' }}
 
     - name: Get and set token
       shell: bash
       run: |
-        if [ "$INPUTS_USE_OIDC" == 'true' ] && [ "$CC_FORK" != 'true' ];
+        # Get and set token
+        if [ "$INPUTS_USE_OIDC" == 'true' ] && [ "$SP_FORK" != 'true' ];
         then
-          echo "CC_TOKEN=$CC_OIDC_TOKEN" >> "$GITHUB_ENV"
+          echo "SP_TOKEN=$SP_OIDC_TOKEN" >> "$GITHUB_ENV"
         elif [ -n "${{ env.PREVENT_TOKEN }}" ];
         then
           echo -e "\033[0;32m==>\033[0m Token set from env"
-            echo "CC_TOKEN=${{ env.PREVENT_TOKEN }}" >> "$GITHUB_ENV"
+            echo "SP_TOKEN=${{ env.PREVENT_TOKEN }}" >> "$GITHUB_ENV"
         else
           if [ -n "$INPUTS_TOKEN" ];
           then
             echo -e "\033[0;32m==>\033[0m Token set from input"
-            CC_TOKEN=$(echo "$INPUTS_TOKEN" | tr -d '\n')
-            echo "CC_TOKEN=$CC_TOKEN" >> "$GITHUB_ENV"
+            SP_TOKEN=$(echo "$INPUTS_TOKEN" | tr -d '\n')
+            echo "SP_TOKEN=$SP_TOKEN" >> "$GITHUB_ENV"
           fi
         fi
       env:
-        CC_OIDC_TOKEN: ${{ steps.oidc.outputs.result }}
-        CC_OIDC_AUDIENCE: ${{ inputs.url || 'https://codecov.io' }}
+        SP_OIDC_TOKEN: ${{ steps.oidc.outputs.result }}
+        SP_OIDC_AUDIENCE: ${{ inputs.url || 'https://codecov.io' }}
         INPUTS_TOKEN: ${{ inputs.token }}
         INPUTS_USE_OIDC: ${{ inputs.use_oidc }}
 
     - name: Override branch for forks
       shell: bash
       run: |
-        if [ -z "$CC_BRANCH" ] && [ -z "$CC_TOKEN" ] && [ "$CC_FORK" == 'true' ]
+        # Override branch for forks
+        if [ -z "$SP_BRANCH" ] && [ -z "$SP_TOKEN" ] && [ "$SP_FORK" == 'true' ]
         then
           echo -e "\033[0;32m==>\033[0m Fork detected, setting branch to $GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL"
           TOKENLESS="$GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL"
-          CC_BRANCH="$GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL"
+          SP_BRANCH="$GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL"
           echo "TOKENLESS=$TOKENLESS" >> "$GITHUB_ENV"
         fi
 
-        echo "CC_BRANCH=$CC_BRANCH" >> "$GITHUB_ENV"
+        echo "SP_BRANCH=$SP_BRANCH" >> "$GITHUB_ENV"
       env:
-        CC_BRANCH: ${{ inputs.override_branch }}
+        SP_BRANCH: ${{ inputs.override_branch }}
         GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL: ${{ github.event.pull_request.head.label }}
         GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
         GITHUB_REPOSITORY: ${{ github.repository }}
@@ -254,69 +248,160 @@ runs:
     - name: Override commits and pr for pull requests
       shell: bash
       run: |
-        if [ -z "$CC_SHA" ];
+        # Override commits and pr for pull requests
+        if [ -z "$SP_SHA" ];
         then
-          CC_SHA="$GITHUB_EVENT_PULL_REQUEST_HEAD_SHA"
+          SP_SHA="$GITHUB_EVENT_PULL_REQUEST_HEAD_SHA"
         fi
-        if [ -z "$CC_PR" ] && [ "${GITHUB_EVENT_NAME}" == "pull_request_target" ];
+        if [ -z "$SP_PR" ] && [ "$SP_FORK" == 'true' ];
         then
-          CC_PR="$GITHUB_EVENT_NUMBER"
+          SP_PR="$GITHUB_EVENT_NUMBER"
         fi
 
-        echo "CC_SHA=$CC_SHA" >> "$GITHUB_ENV"
-        echo "CC_PR=$CC_PR" >> "$GITHUB_ENV"
+        echo "SP_SHA=$SP_SHA" >> "$GITHUB_ENV"
+        echo "SP_PR=$SP_PR" >> "$GITHUB_ENV"
       env:
-        CC_PR: ${{ inputs.override_pr }}
-        CC_SHA: ${{ inputs.override_commit }}
+        SP_PR: ${{ inputs.override_pr }}
+        SP_SHA: ${{ inputs.override_commit }}
         GITHUB_EVENT_NAME: ${{ github.event_name }}
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
         GITHUB_EVENT_PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
-    - name: Upload coverage to Sentry Prevent
-      run: ${GITHUB_ACTION_PATH}/dist/prevent.sh
+    - name: Download Sentry Prevent CLI from pypi
+      if: ${{ inputs.installer_source == 'pypi' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
+      run: |
+        # Download Sentry Prevent CLI from pypi
+        if ! pip install "sentry-prevent-cli$([ "$SP_VERSION" == "latest" ] && echo "" || echo "==$SP_VERSION")"; then
+          SP_EXIT_IF_ERROR "Could not install via pypi."
+          exit
+        fi
+        echo "SP_COMMAND=sentry-prevent-cli" >> "$GITHUB_ENV"
+
+    - name: Download Sentry Prevent CLI from binary
+      if: ${{ inputs.installer_source == 'binary' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        # Download Sentry Prevent CLI from binary
+        if [ -n "$SP_OS" ];
+        then
+          SP_SAY "$g==>$x Overridden OS: $b${SP_OS}$x"
+        else
+          SP_OS="windows"
+          family=$(uname -s | tr '[:upper:]' '[:lower:]')
+          [[ $family == "darwin" ]] && SP_OS="macos"
+          [[ $family == "linux" ]] && SP_OS="linux"
+          [[ $SP_OS == "linux" ]] && \
+            osID=$(grep -e "^ID=" /etc/os-release | cut -c4-)
+          [[ $osID == "alpine" ]] && SP_OS="alpine"
+          [[ $(arch) == "x86_64" && $SP_OS == "alpine" ]] && SP_OS+="_x86_64"
+          [[ $(arch) == "aarch64" && $family == "linux" ]] && SP_OS+="_arm64"
+          $SP_SAY "$g==>$x Detected $b${SP_OS}$x"
+        fi
+        echo "SP_OS=$SP_OS" >> "$GITHUB_ENV"
+
+        SP_FILENAME="sentry-prevent-cli_${SP_OS}"
+        [[ $SP_OS == "windows" ]] && SP_FILENAME+=".exe"
+        SP_COMMAND="./$SP_FILENAME"
+
+        SP_URL="https://github.com/getsentry/prevent-cli/releases/${SP_VERSION}/download/${SP_FILENAME}"
+        $SP_SAY "$g ->$x Downloading binary from $b${SP_URL}$x"
+        curl -LOs $retry "$SP_URL"
+        $SP_SAY "$g==>$x Finishing downloading $b${SP_OS}:${SP_VERSION}$x"
+
+        echo "SP_COMMAND=$SP_COMMAND" >> "$GITHUB_ENV"
       env:
-        CC_BASE_SHA: ${{ inputs.base_sha }}
-        CC_BINARY: ${{ inputs.binary }}
-        CC_BUILD: ${{ inputs.override_build }}
-        CC_BUILD_URL: ${{ inputs.override_build_url }}
-        CC_CLI_TYPE: "sentry-prevent-cli"
-        CC_CODE: ${{ inputs.report_code }}
-        CC_DIR: ${{ inputs.directory }}
-        CC_DISABLE_FILE_FIXES: ${{ inputs.disable_file_fixes }}
-        CC_DISABLE_SEARCH: ${{ inputs.disable_search }}
-        CC_DISABLE_TELEM: ${{ inputs.disable_telem }}
-        CC_DRY_RUN: ${{ inputs.dry_run }}
-        CC_ENTERPRISE_URL: ${{ inputs.url }}
-        CC_ENV: ${{ inputs.env_vars }}
-        CC_EXCLUDES: ${{ inputs.exclude }}
-        CC_FAIL_ON_ERROR: ${{ inputs.fail_ci_if_error }}
-        CC_FILES: ${{ inputs.files }}
-        CC_FLAGS: ${{ inputs.flags }}
-        CC_FORCE: ${{ inputs.force }}
-        CC_GCOV_ARGS: ${{ inputs.gcov_args }}
-        CC_GCOV_EXECUTABLE: ${{ inputs.gcov_executable }}
-        CC_GCOV_IGNORE: ${{ inputs.gcov_ignore }}
-        CC_GCOV_INCLUDE: ${{ inputs.gcov_include }}
-        CC_GIT_SERVICE: ${{ inputs.git_service }}
-        CC_HANDLE_NO_REPORTS_FOUND: ${{ inputs.handle_no_reports_found }}
-        CC_LEGACY: ${{ inputs.use_legacy_upload_endpoint }}
-        CC_NAME: ${{ inputs.name }}
-        CC_NETWORK_FILTER: ${{ inputs.network_filter }}
-        CC_NETWORK_PREFIX: ${{ inputs.network_prefix }}
-        CC_NETWORK_ROOT_FOLDER: ${{ inputs.root_dir }}
-        CC_OS: ${{ inputs.os }}
-        CC_PARENT_SHA: ${{ inputs.commit_parent }}
-        CC_PLUGINS: ${{ inputs.plugins }}
-        CC_RECURSE_SUBMODULES: ${{ inputs.recurse_submodules }}
-        CC_REPORT_TYPE: ${{ inputs.report_type }}
-        CC_RUN_CMD: ${{ inputs.run_command }}
-        CC_SERVICE: ${{ inputs.git_service }}
-        CC_SKIP_VALIDATION: ${{ inputs.skip_validation }}
-        CC_SLUG: ${{ inputs.slug }}
-        CC_SWIFT_PROJECT: ${{ inputs.swift_project }}
-        CC_USE_PYPI: ${{ inputs.use_pypi }}
-        CC_VERBOSE: ${{ inputs.verbose }}
-        CC_VERSION: ${{ inputs.version }}
-        CC_YML_PATH: ${{ inputs.prevent_yml_path }}
+        SP_OS: ${{ inputs.os }}
+
+    - name: Run the CLI
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        # Run the CLI
+
+        SP_CLI_ARGS=()
+        SP_CLI_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_DISABLE_TELEM) )
+        SP_CLI_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_VERBOSE) )
+
+        OLDIFS=$IFS;IFS=,
+        SP_CMD_ARGS=()
+        SP_CMD_ARGS+=( "--report-type" "test_results" )
+        SP_CMD_ARGS+=( $(SP_K_ARG BUILD) $(SP_V_ARG BUILD))
+        SP_CMD_ARGS+=( $(SP_K_ARG BUILD_URL) $(SP_V_ARG BUILD_URL))
+        SP_CMD_ARGS+=( $(SP_K_ARG DIR) $(SP_V_ARG DIR))
+        SP_CMD_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_DISABLE_FILE_FIXES) )
+        SP_CMD_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_DISABLE_SEARCH) )
+        SP_CMD_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_DRY_RUN) )
+        SP_CMD_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_ENV) )
+        if [ -n "$SP_EXCLUDES" ];
+        then
+          for directory in $SP_EXCLUDES; do
+            SP_CMD_ARGS+=( "--exclude" "$directory" )
+          done
+        fi
+        SP_CMD_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_FAIL_ON_ERROR) )
+        if [ -n "$SP_FILES" ];
+        then
+          for file in $SP_FILES; do
+            SP_CMD_ARGS+=( "--file" "$file" )
+          done
+        fi
+        SP_CMD_ARGS+=( $(SP_K_ARG DIR) $(SP_V_ARG GIT_SERVICE))
+        if [ -n "$SP_NAME" ];
+        then
+          SP_CMD_ARGS+=( "--name" "$SP_NAME" )
+        fi
+        SP_CMD_ARGS+=( $(SP_K_ARG NETWORK_FILTER) $(SP_V_ARG NETWORK_FILTER))
+        SP_CMD_ARGS+=( $(SP_K_ARG NETWORK_PREFIX) $(SP_V_ARG NETWORK_PREFIX))
+        SP_CMD_ARGS+=( $(SP_K_ARG NETWORK_ROOT_FOLDER) $(SP_V_ARG NETWORK_ROOT_FOLDER))
+        SP_CMD_ARGS+=( $(SP_K_ARG PARENT_SHA) $(SP_V_ARG PARENT_SHA))
+        SP_CMD_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_RECURSE_SUBMODULES) )
+
+        IFS=$OLDIFS
+
+        # github.com/codecov/uploader/issues/475
+        unset NODE_OPTIONS
+        token="$(eval echo $SP_TOKEN)"
+        $SP_SAY "$g ->$x Token length: ${#token}"
+        token_str=""
+        token_arg=()
+
+        if [ -n "$token" ];
+        then
+          token_str+=" -t <redacted>"
+          token_arg+=( " -t " "$token")
+        fi
+
+        SP_RUN_CMD="upload"
+        $SP_SAY "$g==>$x Running upload"
+        $SP_SAY "      $b$SP_COMMAND $(echo "${SP_CLI_ARGS[@]}") ${SP_RUN_CMD}$token_str $(echo "${SP_CMD_ARGS[@]}")$x"
+        if ! $SP_COMMAND \
+          ${SP_CLI_ARGS[*]} \
+          ${SP_RUN_CMD} \
+          ${token_arg[*]} \
+          "${SP_CMD_ARGS[@]}";
+        then
+          exit_if_error "Failed to run $SP_RUN_CMD"
+        fi
+      env:
+        SP_BUILD: ${{ inputs.override_build }}
+        SP_BUILD_URL: ${{ inputs.override_build_url }}
+        SP_DIR: ${{ inputs.directory }}
+        SP_DISABLE_FILE_FIXES: ${{ inputs.disable_file_fixes }}
+        SP_DISABLE_SEARCH: ${{ inputs.disable_search }}
+        SP_DISABLE_TELEM: ${{ inputs.disable_telem }}
+        SP_DRY_RUN: ${{ inputs.dry_run }}
+        SP_ENV: ${{ inputs.env_vars }}
+        SP_EXCLUDES: ${{ inputs.exclude }}
+        SP_FAIL_ON_ERROR: ${{ inputs.fail_ci_if_error }}
+        SP_FILES: ${{ inputs.files }}
+        SP_GIT_SERVICE: ${{ inputs.git_service }}
+        SP_NAME: ${{ inputs.name }}
+        SP_NETWORK_FILTER: ${{ inputs.network_filter }}
+        SP_NETWORK_PREFIX: ${{ inputs.network_prefix }}
+        SP_NETWORK_ROOT_FOLDER: ${{ inputs.root_dir }}
+        SP_PARENT_SHA: ${{ inputs.commit_parent }}
+        SP_RECURSE_SUBMODULES: ${{ inputs.recurse_submodules }}
+        SP_VERBOSE: ${{ inputs.verbose }}
