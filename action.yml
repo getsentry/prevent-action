@@ -117,6 +117,10 @@ runs:
       shell: bash
       run: |
         # Initialize action
+        SP_SAY() {
+          echo -e "$1"
+        }
+
         echo "SP_SAY() { echo -e \"\$1\"; }" >> "$GITHUB_ENV"
         echo "SP_EXIT_IF_ERROR() { $SP_SAY \"\$r==> \$1\$x\"; if [ \"\$SP_FAIL_ON_ERROR\" = true ]; then $SP_SAY \"\$r    Exiting...\$x\"; exit 1; fi; }" >> "$GITHUB_ENV"
         echo "SP_LOWER() { echo \$(echo \$1 | sed 's/SP//' | sed 's/_/-/g' | tr '[:upper:]' '[:lower:]'); }" >> "$GITHUB_ENV"
@@ -132,7 +136,8 @@ runs:
         echo "SP_FAIL_ON_ERROR=\"${SP_FAIL_ON_ERROR}\"" >> "$GITHUB_ENV"
 
         SP_ACTION_VERSION=$(cat ${GITHUB_ACTION_PATH}/src/version)
-        $SP_SAY " _____                         _
+        $SP_SAY "
+          _____                         _
          |  __ \\                       | |
          | |__) |__ _____   _____ _ __ | |_
          |  _  /.__/ _ \\ \\ / / _ \\ '_ \\| __|
