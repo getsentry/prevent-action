@@ -47,6 +47,14 @@ jobs:
           name: sentry-prevent-demo
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
+      - name: Upload coverage to Sentry Prevent (oidc)
+        uses: ./
+        with:
+          files: ./coverage/script/coverage-final.json
+          flags: script-${{ matrix.os }}
+          name: prevent-script
+          use_oidc: true
+          verbose: true
       - name: Upload coverage to Sentry Prevent (version)
         uses: ./
         with:
