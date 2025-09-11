@@ -117,9 +117,7 @@ runs:
       shell: bash
       run: |
         # Initialize action
-        SP_SAY() {
-          echo -e "$1"
-        }
+        SP_SAY() { echo -e "$1" }
         SP_B="\033[0;36m"  # variables/constants
         SP_G="\033[0;32m"  # info/debug
         SP_R="\033[0;31m"  # errors
@@ -127,8 +125,8 @@ runs:
 
         SP_ACTION_VERSION=$(cat ${GITHUB_ACTION_PATH}/src/version)
         SP_SAY "
-          _____                         _
-         |  __ \\                       | |
+          _____
+         |  __ \\                       _
          | |__) |__ _____   _____ _ __ | |_
          |  _  /.__/ _ \\ \\ / / _ \\ '_ \\| __|
          | |  | | \\  __/\\ V /  __/ | | | |_
@@ -136,16 +134,12 @@ runs:
                                    $SP_R Sentry Prevent$SP_X"
 
         SP_SAY "${SP_G}==>${SP_X} Running Action version ${SP_ACTION_VERSION}"
-        echo "SP_SAY() { echo -e \"\$1\"; }" >> "$GITHUB_ENV"
-        echo "SP_EXIT_IF_ERROR() { SP_SAY \"\$r==> \$1\$x\"; if [ \"\$SP_FAIL_ON_ERROR\" = true ]; then SP_SAY \"\$r    Exiting...\$x\"; exit 1; fi; }" >> "$GITHUB_ENV"
         echo "SP_B=\"\\033[0;36m\"" >> "$GITHUB_ENV"
         echo "SP_G=\"\\033[0;32m\"" >> "$GITHUB_ENV"
         echo "SP_R=\"\\033[0;31m\"" >> "$GITHUB_ENV"
         echo "SP_X=\"\\033[0m\"" >> "$GITHUB_ENV"
         echo "SP_RETRY=\"--retry 5 --retry-delay 2\"" >> "$GITHUB_ENV"
         echo "SP_VERSION=\"${SP_VERSION}\"" >> "$GITHUB_ENV"
-        echo "SP_FAIL_ON_ERROR=\"${SP_FAIL_ON_ERROR}\"" >> "$GITHUB_ENV"
-
       env:
         SP_FAIL_ON_ERROR: ${{ inputs.fail_ci_if_error }}
         SP_VERSION: ${{ inputs.version }}
@@ -154,6 +148,7 @@ runs:
       shell: bash
       run: |
         # Check for dependencies
+        SP_SAY() { echo -e "$1" }
         if ! git; then
           SP_SAY "$SP_R==>Action needs git to run$SP_X";
           exit 1;
@@ -280,7 +275,13 @@ runs:
       run: |
         # Download Sentry Prevent CLI from pypi
         if ! pip install "sentry-prevent-cli$([ "$SP_VERSION" == "latest" ] && echo "" || echo "==$SP_VERSION")"; then
-          SP_EXIT_IF_ERROR "Could not install via pypi."
+          SP_SAY() { echo -e "$1" }
+          SP_SAY "$SP_R==> Could not install via pypi.$SP_X"
+          if [ "$SP_FAIL_ON_ERROR" = true ];
+          then
+             say "$SP_R    Exiting...$SP_X"
+             exit 1;
+          fi
           exit
         fi
         echo "SP_COMMAND=sentry-prevent-cli" >> "$GITHUB_ENV"
@@ -291,6 +292,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         # Download Sentry Prevent CLI from binary
+        SP_SAY() { echo -e "$1" }
         if [ -n "$SP_OS" ];
         then
           SP_SAY "$g==>$x Overridden OS: $b${SP_OS}$x"
@@ -326,6 +328,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         # Run the CLI
+        SP_SAY() { echo -e "$1" }
         SP_LOWER() {
           echo $(echo $1 | sed 's/CODECOV//' | sed 's/_/-/g' | tr '[:upper:]' '[:lower:]')
         }
@@ -413,7 +416,13 @@ runs:
           ${token_arg[*]} \
           "${SP_CMD_ARGS[@]}";
         then
-          exit_if_error "Failed to run $SP_RUN_CMD"
+          SP_SAY "$SP_R==> Failed to run $SP_RUN_CMD $SP_X"
+          if [ "$SP_FAIL_ON_ERROR" = true ];
+          then
+             say "$SP_R    Exiting...$SP_X"
+             exit 1;
+          fi
+          exit
         fi
       env:
         SP_BUILD: ${{ inputs.override_build }}
