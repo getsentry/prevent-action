@@ -128,7 +128,7 @@ runs:
         SP_ACTION_VERSION=$(cat ${GITHUB_ACTION_PATH}/src/version)
         SP_SAY "
           _____
-         |  __ \\                       _
+         |  __ \\                        _
          | |__) |__ _____   _____ _ __ | |_
          |  _  /.__/ _ \\ \\ / / _ \\ '_ \\| __|
          | |  | | \\  __/\\ V /  __/ | | | |_
@@ -150,7 +150,9 @@ runs:
       shell: bash
       run: |
         # Check for dependencies
-        SP_SAY() { echo -e "$1" }
+        SP_SAY() {
+          echo -e "$1"
+        }
         if ! git; then
           SP_SAY "$SP_R==>Action needs git to run$SP_X";
           exit 1;
@@ -277,7 +279,9 @@ runs:
       run: |
         # Download Sentry Prevent CLI from pypi
         if ! pip install "sentry-prevent-cli$([ "$SP_VERSION" == "latest" ] && echo "" || echo "==$SP_VERSION")"; then
-          SP_SAY() { echo -e "$1" }
+          SP_SAY() {
+            echo -e "$1"
+          }
           SP_SAY "$SP_R==> Could not install via pypi.$SP_X"
           if [ "$SP_FAIL_ON_ERROR" = true ];
           then
@@ -294,7 +298,9 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         # Download Sentry Prevent CLI from binary
-        SP_SAY() { echo -e "$1" }
+        SP_SAY() {
+          echo -e "$1"
+        }
         if [ -n "$SP_OS" ];
         then
           SP_SAY "$g==>$x Overridden OS: $b${SP_OS}$x"
@@ -330,7 +336,9 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         # Run the CLI
-        SP_SAY() { echo -e "$1" }
+        SP_SAY() {
+          echo -e "$1"
+        }
         SP_LOWER() {
           echo $(echo $1 | sed 's/CODECOV//' | sed 's/_/-/g' | tr '[:upper:]' '[:lower:]')
         }
