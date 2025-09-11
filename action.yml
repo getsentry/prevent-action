@@ -205,7 +205,7 @@ runs:
       shell: bash
       run: |
         # Get and set token
-        if [ "$INPUTS_USE_OIDC" == 'true' ] && [ "$SP_FORK" != 'true' ];
+        if [ "$INPUTS_USE_OIDC" == 'true' ] && [ "$SP_FORK" != 'true' ] && [ -n "$SP_OIDC_TOKEN" ];
         then
           echo "SP_TOKEN=$SP_OIDC_TOKEN" >> "$GITHUB_ENV"
         elif [ -n "${{ env.PREVENT_TOKEN }}" ];
