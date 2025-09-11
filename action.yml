@@ -90,7 +90,7 @@ inputs:
   use_oidc:
     description: "Use OIDC instead of token. This will ignore any token supplied"
     required: false
-    default: "false"
+    default: "true"
   verbose:
     description: "Enable verbose logging"
     required: false
