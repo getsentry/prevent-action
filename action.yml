@@ -117,7 +117,7 @@ runs:
       shell: bash
       run: |
         # Initialize action
-        SP_SAY() { echo -e "$1" }
+        # SP_SAY() { echo -e "$1" }
         SP_B="\033[0;36m"  # variables/constants
         SP_G="\033[0;32m"  # info/debug
         SP_R="\033[0;31m"  # errors
