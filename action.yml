@@ -120,6 +120,10 @@ runs:
         SP_SAY() {
           echo -e "$1"
         }
+        SP_B="\033[0;36m"  # variables/constants
+        SP_G="\033[0;32m"  # info/debug
+        SP_R="\033[0;31m"  # errors
+        SP_X="\033[0m"
 
         echo "SP_SAY() { echo -e \"\$1\"; }" >> "$GITHUB_ENV"
         echo "SP_EXIT_IF_ERROR() { $SP_SAY \"\$r==> \$1\$x\"; if [ \"\$SP_FAIL_ON_ERROR\" = true ]; then $SP_SAY \"\$r    Exiting...\$x\"; exit 1; fi; }" >> "$GITHUB_ENV"
