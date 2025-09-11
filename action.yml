@@ -279,14 +279,19 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         # Download Sentry Prevent CLI from pypi
-        if ! pip install "sentry-prevent-cli$([ "$SP_VERSION" == "latest" ] && echo "" || echo "==$SP_VERSION")"; then
-          SP_SAY() {
-            echo -e "$1"
-          }
+        SP_SAY() {
+          echo -e "$1"
+        }
+        VERSION="sentry-prevent-cli"
+        if [ "$SP_VERSION" != "latest" ]; then
+          VERSION+="==$SP_VERSION"
+        fi
+        SP_SAY "$SP_B Installing $VERSION from pypi$SP_X"
+        if ! pip install $VERSION; then
           SP_SAY "$SP_R==> Could not install via pypi.$SP_X"
           if [ "$SP_FAIL_ON_ERROR" = true ];
           then
-             say "$SP_R    Exiting...$SP_X"
+             SP_SAY "$SP_R    Exiting...$SP_X"
              exit 1;
           fi
           exit
