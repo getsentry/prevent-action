@@ -127,10 +127,6 @@ runs:
 
         echo "SP_SAY() { echo -e \"\$1\"; }" >> "$GITHUB_ENV"
         echo "SP_EXIT_IF_ERROR() { $SP_SAY \"\$r==> \$1\$x\"; if [ \"\$SP_FAIL_ON_ERROR\" = true ]; then $SP_SAY \"\$r    Exiting...\$x\"; exit 1; fi; }" >> "$GITHUB_ENV"
-        echo "SP_LOWER() { echo \$(echo \$1 | sed 's/SP//' | sed 's/_/-/g' | tr '[:upper:]' '[:lower:]'); }" >> "$GITHUB_ENV"
-        echo "SP_K_ARG() { if [ -n \"\$(eval echo \\\$\\\"SP_\$1\\\")\" ]; then echo \"--\$(lower \"\$1\")\"; fi; }" >> "$GITHUB_ENV"
-        echo "SP_V_ARG() { if [ -n \"\$(eval echo \\\$\\\"SP_\$1\\\")\" ]; then echo \"\$(eval echo \\\$\\\"SP_\$1\\\")\"; fi; }" >> "$GITHUB_ENV"
-        echo "SP_WRITE_BOOL_ARGS() { if [ \"\$(eval echo \\\$\$1)\" = \"true\" ] || [ \"\$(eval echo \\\$\$1)\" = \"1\" ]; then echo \"-\$(lower \$1)\"; fi; }" >> "$GITHUB_ENV"
         echo "SP_B=\"\\033[0;36m\"" >> "$GITHUB_ENV"
         echo "SP_G=\"\\033[0;32m\"" >> "$GITHUB_ENV"
         echo "SP_R=\"\\033[0;31m\"" >> "$GITHUB_ENV"
@@ -329,6 +325,30 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         # Run the CLI
+        SP_LOWER() {
+          echo $(echo $1 | sed 's/CODECOV//' | sed 's/_/-/g' | tr '[:upper:]' '[:lower:]')
+        }
+
+        SP_K_ARG() {
+          if [ -n "$(eval echo \$"CODECOV_$1")" ];
+          then
+            echo "--$(SP_LOWER "$1")"
+          fi
+        }
+
+        SP_V_ARG() {
+          if [ -n "$(eval echo \$"CODECOV_$1")" ];
+          then
+            echo "$(eval echo \$"CODECOV_$1")"
+          fi
+        }
+
+        SP_WRITE_BOOL_ARGS() {
+          if [ "$(eval echo \$$1)" = "true" ] || [ "$(eval echo \$$1)" = "1" ];
+          then
+            echo "-$(SP_LOWER $1)"
+          fi
+        }
 
         SP_CLI_ARGS=()
         SP_CLI_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_DISABLE_TELEM) )
