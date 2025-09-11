@@ -397,7 +397,7 @@ runs:
             SP_CMD_ARGS+=( "--file" "$file" )
           done
         fi
-        SP_CMD_ARGS+=( $(SP_K_ARG DIR) $(SP_V_ARG GIT_SERVICE))
+        SP_CMD_ARGS+=( $(SP_K_ARG GIT_SERVICE) $(SP_V_ARG GIT_SERVICE))
         if [ -n "$SP_NAME" ];
         then
           SP_CMD_ARGS+=( "--name" "$SP_NAME" )
@@ -435,7 +435,7 @@ runs:
           SP_SAY "$SP_R==> Failed to run $SP_RUN_CMD $SP_X"
           if [ "$SP_FAIL_ON_ERROR" = true ];
           then
-             say "$SP_R    Exiting...$SP_X"
+             SP_SAY "$SP_R    Exiting...$SP_X"
              exit 1;
           fi
           exit
