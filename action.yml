@@ -90,7 +90,7 @@ inputs:
   use_oidc:
     description: "Use OIDC instead of token. This will ignore any token supplied"
     required: false
-    default: "false"
+    default: "true"
   verbose:
     description: "Enable verbose logging"
     required: false
@@ -205,7 +205,7 @@ runs:
       shell: bash
       run: |
         # Get and set token
-        if [ "$INPUTS_USE_OIDC" == 'true' ] && [ "$SP_FORK" != 'true' ];
+        if [ "$INPUTS_USE_OIDC" == 'true' ] && [ "$SP_FORK" != 'true' ] && [ -n "$SP_OIDC_TOKEN" ];
         then
           echo "SP_TOKEN=$SP_OIDC_TOKEN" >> "$GITHUB_ENV"
         elif [ -n "${{ env.PREVENT_TOKEN }}" ];

@@ -26,6 +26,7 @@ jobs:
           files: ./junit.xml
           name: sentry-prevent-script
           verbose: true
+          use_oidc: false
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (demo)
         uses: ./
@@ -46,7 +47,6 @@ jobs:
         uses: ./
         with:
           name: prevent-script
-          use_oidc: true
           verbose: true
       - name: Upload coverage to Sentry Prevent (version)
         uses: ./
@@ -76,6 +76,7 @@ jobs:
           files: ./junit.xml
           name: prevent-script
           verbose: true
+          use_oidc: false
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (demo)
         uses: ./
@@ -88,7 +89,6 @@ jobs:
         uses: ./
         with:
           name: prevent-script
-          use_oidc: true
           verbose: true
       - name: Upload coverage to Sentry Prevent (version)
         uses: ./
@@ -97,6 +97,7 @@ jobs:
           name: prevent-version
           version: 11.2.0
           verbose: true
+          use_oidc: false
           token: ${{ secrets.PREVENT_TOKEN }}
 
   run-windows:
@@ -116,6 +117,7 @@ jobs:
           fail_ci_if_error: true
           files: ./junit.xml
           name: sentry-prevent-script
+          use_oidc: false
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (demo)
@@ -123,13 +125,13 @@ jobs:
         with:
           fail_ci_if_error: true
           name: sentry-prevent-demo
+          use_oidc: false
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (oidc)
         uses: ./
         with:
           name: prevent-script
-          use_oidc: true
           verbose: true
       - name: Upload coverage to Sentry Prevent (version)
         uses: ./
@@ -137,6 +139,7 @@ jobs:
           fail_ci_if_error: true
           name: prevent-version
           version: 11.2.0
+          use_oidc: false
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
 
@@ -156,18 +159,21 @@ jobs:
         with:
           files: ./junit.xml
           name: sentry-prevent-script
+          use_oidc: false
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (demo)
         uses: ./
         with:
           name: prevent-demo
+          use_oidc: false
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (version)
         uses: ./
         with:
           name: prevent-version
+          use_oidc: false
           version: v9.1.0
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
