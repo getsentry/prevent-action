@@ -125,18 +125,8 @@ runs:
         SP_R="\033[0;31m"  # errors
         SP_X="\033[0m"
 
-        echo "SP_SAY() { echo -e \"\$1\"; }" >> "$GITHUB_ENV"
-        echo "SP_EXIT_IF_ERROR() { $SP_SAY \"\$r==> \$1\$x\"; if [ \"\$SP_FAIL_ON_ERROR\" = true ]; then $SP_SAY \"\$r    Exiting...\$x\"; exit 1; fi; }" >> "$GITHUB_ENV"
-        echo "SP_B=\"\\033[0;36m\"" >> "$GITHUB_ENV"
-        echo "SP_G=\"\\033[0;32m\"" >> "$GITHUB_ENV"
-        echo "SP_R=\"\\033[0;31m\"" >> "$GITHUB_ENV"
-        echo "SP_X=\"\\033[0m\"" >> "$GITHUB_ENV"
-        echo "SP_RETRY=\"--retry 5 --retry-delay 2\"" >> "$GITHUB_ENV"
-        echo "SP_VERSION=\"${SP_VERSION}\"" >> "$GITHUB_ENV"
-        echo "SP_FAIL_ON_ERROR=\"${SP_FAIL_ON_ERROR}\"" >> "$GITHUB_ENV"
-
         SP_ACTION_VERSION=$(cat ${GITHUB_ACTION_PATH}/src/version)
-        $SP_SAY "
+        SP_SAY "
           _____                         _
          |  __ \\                       | |
          | |__) |__ _____   _____ _ __ | |_
@@ -145,7 +135,17 @@ runs:
          |_|  |_|  \\___| \\_/ \\___|_| |_|\\__|
                                    $SP_R Sentry Prevent$SP_X"
 
-        $SP_SAY "${SP_G}==>${SP_X} Running Action version ${SP_ACTION_VERSION}"
+        SP_SAY "${SP_G}==>${SP_X} Running Action version ${SP_ACTION_VERSION}"
+        echo "SP_SAY() { echo -e \"\$1\"; }" >> "$GITHUB_ENV"
+        echo "SP_EXIT_IF_ERROR() { SP_SAY \"\$r==> \$1\$x\"; if [ \"\$SP_FAIL_ON_ERROR\" = true ]; then SP_SAY \"\$r    Exiting...\$x\"; exit 1; fi; }" >> "$GITHUB_ENV"
+        echo "SP_B=\"\\033[0;36m\"" >> "$GITHUB_ENV"
+        echo "SP_G=\"\\033[0;32m\"" >> "$GITHUB_ENV"
+        echo "SP_R=\"\\033[0;31m\"" >> "$GITHUB_ENV"
+        echo "SP_X=\"\\033[0m\"" >> "$GITHUB_ENV"
+        echo "SP_RETRY=\"--retry 5 --retry-delay 2\"" >> "$GITHUB_ENV"
+        echo "SP_VERSION=\"${SP_VERSION}\"" >> "$GITHUB_ENV"
+        echo "SP_FAIL_ON_ERROR=\"${SP_FAIL_ON_ERROR}\"" >> "$GITHUB_ENV"
+
       env:
         SP_FAIL_ON_ERROR: ${{ inputs.fail_ci_if_error }}
         SP_VERSION: ${{ inputs.version }}
@@ -155,15 +155,15 @@ runs:
       run: |
         # Check for dependencies
         if ! git; then
-          $SP_SAY "$SP_R==>Action needs git to run$SP_X";
+          SP_SAY "$SP_R==>Action needs git to run$SP_X";
           exit 1;
         elif ! curl; then
-          $SP_SAY "$SP_R==>Action needs git to curl$SP_X";
+          SP_SAY "$SP_R==>Action needs git to curl$SP_X";
           exit 1;
 
         if [ "$SP_INSTALLER_SOURCE" != "pypi" ] && [ "$SP_INSTALLER_SOURCE" != "binary" ];
         then
-          $SP_SAY "$SP_R==>Invalid installer source $SP_INSTALLER_SOURCE given. Must be `pypi` or `binary`$SP_X";
+          SP_SAY "$SP_R==>Invalid installer source $SP_INSTALLER_SOURCE given. Must be `pypi` or `binary`$SP_X";
           exit 1;
         fi
       env:
@@ -304,7 +304,7 @@ runs:
           [[ $osID == "alpine" ]] && SP_OS="alpine"
           [[ $(arch) == "x86_64" && $SP_OS == "alpine" ]] && SP_OS+="_x86_64"
           [[ $(arch) == "aarch64" && $family == "linux" ]] && SP_OS+="_arm64"
-          $SP_SAY "$g==>$x Detected $b${SP_OS}$x"
+          SP_SAY "$g==>$x Detected $b${SP_OS}$x"
         fi
         echo "SP_OS=$SP_OS" >> "$GITHUB_ENV"
 
@@ -313,9 +313,9 @@ runs:
         SP_COMMAND="./$SP_FILENAME"
 
         SP_URL="https://github.com/getsentry/prevent-cli/releases/${SP_VERSION}/download/${SP_FILENAME}"
-        $SP_SAY "$g ->$x Downloading binary from $b${SP_URL}$x"
+        SP_SAY "$g ->$x Downloading binary from $b${SP_URL}$x"
         curl -LOs $retry "$SP_URL"
-        $SP_SAY "$g==>$x Finishing downloading $b${SP_OS}:${SP_VERSION}$x"
+        SP_SAY "$g==>$x Finishing downloading $b${SP_OS}:${SP_VERSION}$x"
 
         echo "SP_COMMAND=$SP_COMMAND" >> "$GITHUB_ENV"
       env:
@@ -394,7 +394,7 @@ runs:
         # github.com/codecov/uploader/issues/475
         unset NODE_OPTIONS
         token="$(eval echo $SP_TOKEN)"
-        $SP_SAY "$g ->$x Token length: ${#token}"
+        SP_SAY "$g ->$x Token length: ${#token}"
         token_str=""
         token_arg=()
 
@@ -405,8 +405,8 @@ runs:
         fi
 
         SP_RUN_CMD="upload"
-        $SP_SAY "$g==>$x Running upload"
-        $SP_SAY "      $b$SP_COMMAND $(echo "${SP_CLI_ARGS[@]}") ${SP_RUN_CMD}$token_str $(echo "${SP_CMD_ARGS[@]}")$x"
+        SP_SAY "$g==>$x Running upload"
+        SP_SAY "      $b$SP_COMMAND $(echo "${SP_CLI_ARGS[@]}") ${SP_RUN_CMD}$token_str $(echo "${SP_CMD_ARGS[@]}")$x"
         if ! $SP_COMMAND \
           ${SP_CLI_ARGS[*]} \
           ${SP_RUN_CMD} \
