@@ -141,7 +141,7 @@ runs:
         echo "SP_R=\"\\033[0;31m\"" >> "$GITHUB_ENV"
         echo "SP_X=\"\\033[0m\"" >> "$GITHUB_ENV"
         echo "SP_RETRY=\"--retry 5 --retry-delay 2\"" >> "$GITHUB_ENV"
-        echo "SP_VERSION=\"${SP_VERSION}\"" >> "$GITHUB_ENV"
+        echo "SP_VERSION=${SP_VERSION}" >> "$GITHUB_ENV"
       env:
         SP_FAIL_ON_ERROR: ${{ inputs.fail_ci_if_error }}
         SP_VERSION: ${{ inputs.version }}
