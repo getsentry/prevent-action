@@ -37,6 +37,16 @@ jobs:
           name: sentry-prevent-demo
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
+      - name: Upload coverage to Sentry Prevent (binary)
+        uses: ./
+        with:
+          fail_ci_if_error: true
+          files: ./coverage/calculator/coverage-final.json,./coverage/coverage-test/coverage-final.json,./coverage/coverage-final.json
+          flags: demo-${{ matrix.os }}
+          installer_source: binary
+          name: sentry-prevent-demo
+          verbose: true
+          token: ${{ secrets.PREVENT_TOKEN }}
       - name: Upload coverage to Sentry Prevent (version)
         uses: ./
         with:
@@ -44,7 +54,7 @@ jobs:
           files: ./coverage/calculator/coverage-final.json,./coverage/coverage-test/coverage-final.json,./coverage/coverage-final.json
           flags: version-${{ matrix.os }}
           name: prevent-version
-          version: v9.1.0
+          version: 11.2.0
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
 
@@ -93,7 +103,7 @@ jobs:
           files: ./coverage/calculator/coverage-final.json,./coverage/coverage-test/coverage-final.json,./coverage/coverage-final.json
           flags: version-maxos-latest-xlarge
           name: prevent-version
-          version: v9.1.0
+          version: 11.2.0
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
 
