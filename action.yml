@@ -283,7 +283,7 @@ runs:
           echo -e "$1"
         }
         VERSION="sentry-prevent-cli"
-        if [ "$SP_VERSION" != "latest" ]; then
+        if [ "$SP_VERSION" != 'latest' ]; then
           VERSION+="==${SP_VERSION}"
         fi
         SP_SAY "$SP_B Installing $VERSION from pypi$SP_X"
