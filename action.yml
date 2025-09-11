@@ -136,11 +136,11 @@ runs:
                                    $SP_R Sentry Prevent$SP_X"
 
         SP_SAY "${SP_G}==>${SP_X} Running Action version ${SP_ACTION_VERSION}"
-        echo "SP_B=\"\\033[0;36m\"" >> "$GITHUB_ENV"
-        echo "SP_G=\"\\033[0;32m\"" >> "$GITHUB_ENV"
-        echo "SP_R=\"\\033[0;31m\"" >> "$GITHUB_ENV"
-        echo "SP_X=\"\\033[0m\"" >> "$GITHUB_ENV"
-        echo "SP_RETRY=\"--retry 5 --retry-delay 2\"" >> "$GITHUB_ENV"
+        echo "SP_B=\\033[0;36m" >> "$GITHUB_ENV"
+        echo "SP_G=\\033[0;32m" >> "$GITHUB_ENV"
+        echo "SP_R=\\033[0;31m" >> "$GITHUB_ENV"
+        echo "SP_X=\\033[0m" >> "$GITHUB_ENV"
+        echo "SP_RETRY=--retry 5 --retry-delay 2" >> "$GITHUB_ENV"
         echo "SP_VERSION=${SP_VERSION}" >> "$GITHUB_ENV"
       env:
         SP_FAIL_ON_ERROR: ${{ inputs.fail_ci_if_error }}
@@ -346,20 +346,20 @@ runs:
           echo -e "$1"
         }
         SP_LOWER() {
-          echo $(echo $1 | sed 's/CODECOV//' | sed 's/_/-/g' | tr '[:upper:]' '[:lower:]')
+          echo $(echo $1 | sed 's/SP//' | sed 's/_/-/g' | tr '[:upper:]' '[:lower:]')
         }
 
         SP_K_ARG() {
-          if [ -n "$(eval echo \$"CODECOV_$1")" ];
+          if [ -n "$(eval echo \$"SP_$1")" ];
           then
             echo "--$(SP_LOWER "$1")"
           fi
         }
 
         SP_V_ARG() {
-          if [ -n "$(eval echo \$"CODECOV_$1")" ];
+          if [ -n "$(eval echo \$"SP_$1")" ];
           then
-            echo "$(eval echo \$"CODECOV_$1")"
+            echo "$(eval echo \$"SP_$1")"
           fi
         }
 
