@@ -67,3 +67,5 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3.28.13
+      with:
+        upload: never  # currently our security scanning is org set to default and this will break SARIF file upload
