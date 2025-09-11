@@ -159,12 +159,14 @@ runs:
         elif ! curl; then
           SP_SAY "$SP_R==>Action needs git to curl$SP_X";
           exit 1;
+        fi
 
         if [ "$SP_INSTALLER_SOURCE" != "pypi" ] && [ "$SP_INSTALLER_SOURCE" != "binary" ];
         then
           SP_SAY "$SP_R==>Invalid installer source $SP_INSTALLER_SOURCE given. Must be `pypi` or `binary`$SP_X";
           exit 1;
         fi
+        SP_SAY "$SP_G==>All dependencies preinstalled$SP_X";
       env:
         SP_INSTALLER_SOURCE: ${{ inputs.installer_source }}
 
