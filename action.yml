@@ -144,7 +144,8 @@ runs:
          | |  | | \\  __/\\ V /  __/ | | | |_
          |_|  |_|  \\___| \\_/ \\___|_| |_|\\__|
                                    $SP_R Sentry Prevent$SP_X"
-        $SP_SAY "$SP_G==>$SP_X Running Action version $SP_ACTION_VERSION"
+
+        $SP_SAY "${SP_G}==>${SP_X} Running Action version ${SP_ACTION_VERSION}"
       env:
         SP_FAIL_ON_ERROR: ${{ inputs.fail_ci_if_error }}
         SP_VERSION: ${{ inputs.version }}
