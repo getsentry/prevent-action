@@ -99,7 +99,7 @@ jobs:
           verbose: true
           token: ${{ secrets.PREVENT_TOKEN }}
 
-  run:
+  run-windows:
     runs-on: windows-latest
     steps:
       - name: Checkout
