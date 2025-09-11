@@ -126,22 +126,22 @@ runs:
         SP_X="\033[0m"
 
         SP_ACTION_VERSION=$(cat ${GITHUB_ACTION_PATH}/src/version)
-        #SP_SAY "
-        #  _____
-        # |  __ \\                       _
-        # | |__) |__ _____   _____ _ __ | |_
-        # |  _  /.__/ _ \\ \\ / / _ \\ '_ \\| __|
-        # | |  | | \\  __/\\ V /  __/ | | | |_
-        # |_|  |_|  \\___| \\_/ \\___|_| |_|\\__|
-        #                           $SP_R Sentry Prevent$SP_X"
+        SP_SAY "
+          _____
+         |  __ \\                       _
+         | |__) |__ _____   _____ _ __ | |_
+         |  _  /.__/ _ \\ \\ / / _ \\ '_ \\| __|
+         | |  | | \\  __/\\ V /  __/ | | | |_
+         |_|  |_|  \\___| \\_/ \\___|_| |_|\\__|
+                                   $SP_R Sentry Prevent$SP_X"
 
-        #SP_SAY "${SP_G}==>${SP_X} Running Action version ${SP_ACTION_VERSION}"
-        #echo "SP_B=\"\\033[0;36m\"" >> "$GITHUB_ENV"
-        #echo "SP_G=\"\\033[0;32m\"" >> "$GITHUB_ENV"
-        #echo "SP_R=\"\\033[0;31m\"" >> "$GITHUB_ENV"
-        #echo "SP_X=\"\\033[0m\"" >> "$GITHUB_ENV"
-        #echo "SP_RETRY=\"--retry 5 --retry-delay 2\"" >> "$GITHUB_ENV"
-        #echo "SP_VERSION=\"${SP_VERSION}\"" >> "$GITHUB_ENV"
+        SP_SAY "${SP_G}==>${SP_X} Running Action version ${SP_ACTION_VERSION}"
+        echo "SP_B=\"\\033[0;36m\"" >> "$GITHUB_ENV"
+        echo "SP_G=\"\\033[0;32m\"" >> "$GITHUB_ENV"
+        echo "SP_R=\"\\033[0;31m\"" >> "$GITHUB_ENV"
+        echo "SP_X=\"\\033[0m\"" >> "$GITHUB_ENV"
+        echo "SP_RETRY=\"--retry 5 --retry-delay 2\"" >> "$GITHUB_ENV"
+        echo "SP_VERSION=\"${SP_VERSION}\"" >> "$GITHUB_ENV"
       env:
         SP_FAIL_ON_ERROR: ${{ inputs.fail_ci_if_error }}
         SP_VERSION: ${{ inputs.version }}
