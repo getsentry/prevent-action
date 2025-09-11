@@ -331,6 +331,7 @@ runs:
         SP_URL="https://github.com/getsentry/prevent-cli/releases/${SP_VERSION}/download/${SP_FILENAME}"
         SP_SAY "$g ->$x Downloading binary from $b${SP_URL}$x"
         curl -LOs $retry "$SP_URL"
+        chmod u+x ${SP_FILENAME}
         SP_SAY "$g==>$x Finishing downloading $b${SP_OS}:${SP_VERSION}$x"
 
         echo "SP_COMMAND=$SP_COMMAND" >> "$GITHUB_ENV"
