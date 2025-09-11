@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
@@ -103,6 +103,51 @@ jobs:
         with:
           fail_ci_if_error: true
           flags: version-maxos-latest-xlarge
+          name: prevent-version
+          version: 11.2.0
+          verbose: true
+          token: ${{ secrets.PREVENT_TOKEN }}
+
+  run:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          submodules: "true"
+      - name: Install dependencies
+        run: pip install -r src/scripts/app/requirements.txt
+      - name: Run tests and collect reports
+        run: pytest src/scripts/app/ --cov --junitxml=junit.xml
+      - name: Upload coverage to Sentry Prevent (script)
+        uses: ./
+        with:
+          fail_ci_if_error: true
+          files: ./junit.xml
+          flags: script-$windows
+          name: sentry-prevent-script
+          verbose: true
+          token: ${{ secrets.PREVENT_TOKEN }}
+      - name: Upload coverage to Sentry Prevent (demo)
+        uses: ./
+        with:
+          fail_ci_if_error: true
+          flags: demo-windows
+          name: sentry-prevent-demo
+          verbose: true
+          token: ${{ secrets.PREVENT_TOKEN }}
+      - name: Upload coverage to Sentry Prevent (oidc)
+        uses: ./
+        with:
+          flags: script-windows
+          name: prevent-script
+          use_oidc: true
+          verbose: true
+      - name: Upload coverage to Sentry Prevent (version)
+        uses: ./
+        with:
+          fail_ci_if_error: true
+          flags: version-windows
           name: prevent-version
           version: 11.2.0
           verbose: true
