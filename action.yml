@@ -312,7 +312,7 @@ runs:
             osID=$(grep -e "^ID=" /etc/os-release | cut -c4-)
           [[ $osID == "alpine" ]] && SP_OS="alpine"
 
-          [[ $SP_OS == "alpine" || $SP_OS == "linux" ]] && SP_OS+=$(arch)
+          [[ $SP_OS == "alpine" || $SP_OS == "linux" ]] && SP_OS+="_$(arch)"
           SP_SAY "$g==>$x Detected $b${SP_OS}$x"
         fi
         echo "SP_OS=$SP_OS" >> "$GITHUB_ENV"
