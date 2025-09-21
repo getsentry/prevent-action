@@ -312,8 +312,8 @@ runs:
             osID=$(grep -e "^ID=" /etc/os-release | cut -c4-)
           [[ $osID == "alpine" ]] && SP_OS="alpine"
 
-          [[ $(arch) == "x86_64" && ($SP_OS == "alpine || $SP_OS == "linux") ]] && SP_OS+="_x86_64"
-          [[ $(arch) == "arm64" && ($SP_OS == "alpine || $SP_OS == "linux") ]] && SP_OS+="_arm64"
+          [[ $(arch) == "x86_64" && ($SP_OS == "alpine" || $SP_OS == "linux") ]] && SP_OS+="_x86_64"
+          [[ $(arch) == "arm64" && ($SP_OS == "alpine" || $SP_OS == "linux") ]] && SP_OS+="_arm64"
           SP_SAY "$g==>$x Detected $b${SP_OS}$x"
         fi
         echo "SP_OS=$SP_OS" >> "$GITHUB_ENV"
