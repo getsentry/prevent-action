@@ -9,45 +9,35 @@
 
 ## Usage
 
-To integrate Sentry Prevent with your Actions pipeline, specify the name of this repository with a tag number (`@vl` is recommended) as a `step` within your `workflow.yml` file.
+To integrate Sentry Prevent with your Actions pipeline, specify the name of this repository with a tag number (`@v0` is recommended) as a `step` within your `workflow.yml` file.
 
 > [!WARNING]
-> In order for the Action to work seamlessly, you will need to have `curl`, `git`, and `gpg` installed on your runner. You will also need to run the [actions/checkout](https://github.com/actions/checkout) before calling the Action.
+> In order for the Action to work seamlessly, you will need to have `curl` and `git` installed on your runner. You will also need to run the [actions/checkout](https://github.com/actions/checkout) before calling the Action.
+> It is suggested to write checkout with `fetch-depth: 0` or a number greater than `1`.
 
 This Action also requires you to [provide an upload token](https://docs.prevent.io/docs/frequently-asked-questions#section-where-is-the-repository-upload-token-found-) from [prevent.io](https://www.prevent.io) (tip: in order to avoid exposing your token, [store it](https://docs.prevent.com/docs/adding-the-prevent-token#github-actions) as a `secret`).
 
 > [!NOTE]
 > Currently, the Action will identify linux, macos, and windows runners. However, the Action may misidentify other architectures. The OS can be specified as
-> - alpine
-> - alpine-arm64
-> - linux
-> - linux-arm64
+> - alpine_arm64
+> - alpine_x86_64
+> - linux_arm64
+> - linux_x86_64
 > - macos
 > - windows
 
 Inside your `.github/workflows/workflow.yml` file:
 
 ```yaml
+permissions:
+  id-token: write  # by default, OIDC is used to verify the workflow by the Prevent Action
 steps:
-- uses: actions/checkout@main
-- uses: getsentry/prevent-action@v5
+- uses: actions/checkout@v5
   with:
-    report_type: coverage # optional (default = coverage)
-    fail_ci_if_error: true # optional (default = false)
-    files: ./coverage1.xml,./coverage2.xml # optional
-    flags: unittests # optional
-    name: prevent-coverage-results # optional
-    token: ${{ secrets.PREVENT_TOKEN }}
-    verbose: true # optional (default = false)
-- uses: getsentry/prevent-action@v5
+    fetch-depth: 0
+- uses: getsentry/prevent-action@v0
   with:
-    report_type: test_results # required to upload test results
-    fail_ci_if_error: true # optional (default = false)
-    files: ./junit.xml # optional
-    flags: unittests # optional
-    name: prevent-test-results # optional
     token: ${{ secrets.PREVENT_TOKEN }}
-    verbose: true # optional (default = false)
 ```
 
 The token can also be passed in via environment variables:
@@ -71,15 +61,14 @@ steps:
 ### Dependabot
 - For repositories using `Dependabot`, users will need to ensure that it has access to the token for PRs from Dependabot to upload coverage. To do this, please add your `PREVENT_TOKEN` as a Dependabot Secret. For more information, see ["Configuring access to private registries for Dependabot."](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/configuring-access-to-private-registries-for-dependabot#storing-credentials-for-dependabot-to-use)
 
-
 ### Using OIDC
-For users with [OpenID Connect(OIDC) enabled](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect), the token is not necessary. You can use OIDC with the `use_oidc` argument as following.
+By default, [OpenID Connect(OIDC)](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) verification is on. You will need to add
 
 ```yaml
-- uses: getsentry/prevent-action@v5
-  with:
-    use_oidc: true
+permissions:
+  id-token: write
 ```
+to the top of your workflow. To turn off OIDC verification, you will need to add the `use-oidc` argument with the Action and set it to `false`.
 
 Any token supplied will be ignored, as Sentry Prevent will default to the OIDC token for verification.
 
@@ -89,9 +78,7 @@ Prevent's Action supports inputs from the user. These inputs, along with their d
 
 | Input  | Description |
 | :---       |     :---     |
-| `report_type` | [Required] The type of file to upload, coverage by default. Possible values are "test_results", "coverage". |
-| `base_sha` | 'The base SHA to select. This is only used in the "pr-base-picking" run command' |
-| `binary` | The file location of a pre-downloaded version of the CLI. If specified, integrity checking will be bypassed. |
+| `token` | [Required] Repository token. Used to authorize report uploads. Maybe passed in as an environment variable instead. |
 | `commit_parent` | SHA (with 40 chars) of what should be the parent of this commit. |
 | `directory` | Folder to search for report files. Default to the current working directory |
 | `disable_file_fixes` | Disable file fixes to ignore common lines from coverage (e.g. blank lines or empty brackets). Read more here https://docs.prevent.com/docs/fixing-reports |
@@ -103,14 +90,8 @@ Prevent's Action supports inputs from the user. These inputs, along with their d
 | `exclude` | Comma-separated list of folders to exclude from search. |
 | `fail_ci_if_error` | On error, exit with non-zero code |
 | `files` | Comma-separated explicit list of files to upload. These will be added to the report files found for upload. If you wish to only upload the specified files, please consider using "disable-search" to disable uploading other files. |
-| `flags` | Comma-separated list of flags to upload to group report metrics. |
-| `force` | Only used for empty-upload run command |
 | `git_service` | Override the git_service (e.g. github_enterprise) |
-| `gcov_args` | Extra arguments to pass to gcov |
-| `gcov_executable` | gcov executable to run. Defaults to 'gcov' |
-| `gcov_ignore` | Paths to ignore during gcov gathering |
-| `gcov_include` | Paths to include during gcov gathering |
-| `handle_no_reports_found` | If no reports are found, do not raise an exception. |
+| `installer_source` | Select which installer to use. Choices are `binary` and `pypi`, defaults to `pypi` |
 | `name` | Custom defined name of the upload. Visible in the Sentry Prevent UI |
 | `network_filter` | Specify a filter on the files listed in the network section of the Sentry Prevent report. This will only add files whose path begin with the specified filter. Useful for upload-specific path fixing. |
 | `network_prefix` | Specify a prefix on files listed in the network section of the Sentry Prevent report. Useful to help resolve path fixing. |
@@ -120,71 +101,13 @@ Prevent's Action supports inputs from the user. These inputs, along with their d
 | `override_build_url` | The URL of the build where this is running |
 | `override_commit` | Commit SHA (with 40 chars) |
 | `override_pr` | Specify the pull request number manually. Used to override pre-existing CI environment variables. |
-| `plugins` | Comma-separated list of plugins to run. Specify `noop` to turn off all plugins |
 | `recurse_submodules` | Whether to enumerate files inside of submodules for path-fixing purposes. Off by default. |
 | `root_dir` | Root folder from which to consider paths on the network section. Defaults to current working directory. |
-| `run_command` | Choose which CLI command to run. Options are "upload-coverage", "empty-upload", "pr-base-picking", "send-notifications". "upload-coverage" is run by default.' |
-| `skip_validation` | Skip integrity checking of the CLI. This is NOT recommended. |
-| `slug` | [Required when using the org token] Set to the owner/repo slug used instead of the private repo token. Only applicable to some Enterprise users. |
-| `swift_project` | Specify the swift project name. Useful for optimization. |
-| `token` | Repository token. Used to authorize report uploads |
-| `url` | Set to the Sentry Prevent instance URl. Used by Dedicated Enterprise Cloud customers. |
-| `use_legacy_upload_endpoint` | Use the legacy upload endpoint. |
 | `use_oidc` | Use OIDC instead of token. This will ignore any token supplied |
-| `use_pypi` | Use the pypi version of the CLI instead of from sentry.io/get-prevent-cli. If specified, integrity checking will be bypassed. |
 | `verbose` | Enable verbose logging |
 | `version` | Which version of the Prevent CLI to use (defaults to 'latest') |
 | `working-directory` | Directory in which to execute prevent.sh |
 
-### Example `workflow.yml` with Prevent Action
-
-```yaml
-name: Example workflow for Sentry Prevent
-on: [push]
-jobs:
-  run:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    env:
-      OS: ${{ matrix.os }}
-      PYTHON: '3.10'
-    steps:
-    - uses: actions/checkout@main
-    - name: Setup Python
-      uses: actions/setup-python@main
-      with:
-        python-version: '3.10'
-    - name: Generate coverage report
-      run: |
-        pip install pytest
-        pip install pytest-cov
-        pytest --cov=./ --cov-report=xml --junitxml=junit.xml
-    - name: Upload coverage to Sentry Prevent
-      uses: getsentry/prevent-action@v5
-      with:
-        directory: ./coverage/reports/
-        env_vars: OS,PYTHON
-        fail_ci_if_error: true
-        files: ./coverage1.xml,./coverage2.xml,!./cache
-        flags: unittests
-        name: prevent-coverage-results
-        token: ${{ secrets.PREVENT_TOKEN }}
-        verbose: true
-    - name: Upload test results to Sentry Prevent
-      uses: getsentry/prevent-action@v5
-      with:
-        report_type: test_results # required for test results
-        directory: ./
-        env_vars: OS,PYTHON
-        fail_ci_if_error: true
-        files: ./junit.xml
-        flags: unittests
-        name: prevent-test-results
-        token: ${{ secrets.PREVENT_TOKEN }}
-        verbose: true
-```
 ## Contributing
 
 Contributions are welcome! Check out the [Contribution Guide](CONTRIBUTING.md).
