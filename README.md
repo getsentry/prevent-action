@@ -78,7 +78,7 @@ Prevent's Action supports inputs from the user. These inputs, along with their d
 
 | Input  | Description |
 | :---       |     :---     |
-| `token` | [Required] Repository token. Used to authorize report uploads. Maybe passed in as an environment variable instead. |
+| `token` | [Required] Repository token. Used to authorize report uploads. Able to be passed in as an environment variable instead. |
 | `commit_parent` | SHA (with 40 chars) of what should be the parent of this commit. |
 | `directory` | Folder to search for report files. Default to the current working directory |
 | `disable_file_fixes` | Disable file fixes to ignore common lines from coverage (e.g. blank lines or empty brackets). Read more here https://docs.prevent.com/docs/fixing-reports |
