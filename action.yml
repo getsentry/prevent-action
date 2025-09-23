@@ -10,10 +10,6 @@ inputs:
   directory:
     description: "Folder to search for coverage files. Default to the current working directory"
     required: false
-  disable_file_fixes:
-    description: "Disable file fixes to ignore common lines from coverage (e.g. blank lines or empty brackets). Read more here https://docs.codecov.com/docs/fixing-reports" # TODO: update this link
-    required: false
-    default: "false"
   disable_search:
     description: "Disable search for coverage files. This is helpful when specifying what files you want to upload with the files option."
     required: false
@@ -374,7 +370,6 @@ runs:
         SP_CMD_ARGS+=( $(SP_K_ARG BUILD) $(SP_V_ARG BUILD))
         SP_CMD_ARGS+=( $(SP_K_ARG BUILD_URL) $(SP_V_ARG BUILD_URL))
         SP_CMD_ARGS+=( $(SP_K_ARG DIR) $(SP_V_ARG DIR))
-        SP_CMD_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_DISABLE_FILE_FIXES) )
         SP_CMD_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_DISABLE_SEARCH) )
         SP_CMD_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_DRY_RUN) )
         SP_CMD_ARGS+=( $(SP_WRITE_BOOL_ARGS SP_ENV) )
@@ -438,7 +433,6 @@ runs:
         SP_BUILD: ${{ inputs.override_build }}
         SP_BUILD_URL: ${{ inputs.override_build_url }}
         SP_DIR: ${{ inputs.directory }}
-        SP_DISABLE_FILE_FIXES: ${{ inputs.disable_file_fixes }}
         SP_DISABLE_SEARCH: ${{ inputs.disable_search }}
         SP_DISABLE_TELEM: ${{ inputs.disable_telem }}
         SP_DRY_RUN: ${{ inputs.dry_run }}
