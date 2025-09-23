@@ -5,7 +5,7 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fprevent%2Fprevent-action.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fprevent%2Fprevent-action?ref=badge_shield)
 [![Workflow for Prevent Action](https://github.com/prevent/prevent-action/actions/workflows/main.yml/badge.svg)](https://github.com/prevent/prevent-action/actions/workflows/main.yml) -->
 
-### Easily upload coverage and test result reports to Sentry Prevent from GitHub Actions
+### Easily upload test result reports to Sentry Prevent from GitHub Actions
 
 ## Usage
 
@@ -48,7 +48,7 @@ steps:
 - uses: getsentry/prevent-action@v5
   with:
     fail_ci_if_error: true # optional (default = false)
-    files: ./coverage1.xml,./coverage2.xml # optional
+    files: ./junit1.xml,./junit2.xml # optional
     flags: unittests # optional
     name: prevent-umbrella # optional
     verbose: true # optional (default = false)
@@ -81,8 +81,7 @@ Prevent's Action supports inputs from the user. These inputs, along with their d
 | `token` | [Required] Repository token. Used to authorize report uploads. Able to be passed in as an environment variable instead. |
 | `commit_parent` | SHA (with 40 chars) of what should be the parent of this commit. |
 | `directory` | Folder to search for report files. Default to the current working directory |
-| `disable_file_fixes` | Disable file fixes to ignore common lines from coverage (e.g. blank lines or empty brackets). Read more here https://docs.prevent.com/docs/fixing-reports |
-| `disable_search` | Disable search for coverage files. This is helpful when specifying what files you want to upload with the files option. |
+| `disable_search` | Disable search for report files. This is helpful when specifying what files you want to upload with the files option. |
 | `disable_safe_directory` | Disable setting safe directory. Set to true to disable. |
 | `disable_telem` | Disable sending telemetry data to Prevent. Set to true to disable. |
 | `dry_run` | Don't upload files to Prevent |
