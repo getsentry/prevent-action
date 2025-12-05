@@ -193,7 +193,7 @@ runs:
         GITHUB_REPOSITORY: ${{ github.repository }}
 
     - name: Get OIDC token
-      if: ${{ inputs.use_oidc == 'true' }}
+      if: ${{ inputs.use_oidc == 'true' }} && env.SP_FORK != 'true'
       uses: actions/github-script@v7
       id: oidc
       with:
