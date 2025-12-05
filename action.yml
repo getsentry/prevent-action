@@ -193,11 +193,12 @@ runs:
         GITHUB_REPOSITORY: ${{ github.repository }}
 
     - name: Get OIDC token
-      if: ${{ inputs.use_oidc == 'true' }} && env.SP_FORK != 'false'
+      if: ${{ inputs.use_oidc == 'true' }} && env.SP_FORK == 'true'
       uses: actions/github-script@v7
       id: oidc
       with:
         script: |
+          console.log('Getting OIDC token...')
           const id_token = await core.getIDToken('https://codecov.io')
           return id_token
 
