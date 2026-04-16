@@ -1,11 +1,16 @@
 # Sentry Prevent GitHub Action
 
+### Easily upload coverage and test result reports to Sentry Prevent from GitHub Actions
+
+---
+## ⚠️ Deprecation Notice ⚠️
+> [!CAUTION]
+> This repository and the subsequent Action are being **deprecated** in favor of the [Codecov Action](https://github.com/codecov/codecov-action)
+---
 <!-- TODO: add these back later -->
 <!-- [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-v5-undefined.svg?logo=github&logoColor=white&style=flat)](https://github.com/marketplace/actions/prevent)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fprevent%2Fprevent-action.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fprevent%2Fprevent-action?ref=badge_shield)
 [![Workflow for Prevent Action](https://github.com/prevent/prevent-action/actions/workflows/main.yml/badge.svg)](https://github.com/prevent/prevent-action/actions/workflows/main.yml) -->
-
-### Easily upload coverage and test result reports to Sentry Prevent from GitHub Actions
 
 ## Usage
 
